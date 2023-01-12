@@ -87,6 +87,11 @@ resource "aws_lb" "ecs_alb" {
   internal           = true
   subnets            = module.vpc.private_subnets
   security_groups    = [aws_security_group.lb_security_group.id]
+
+  tags = {
+    workload    = "workload1"
+    environment = "dev"
+  }
 }
 
 # # Create the ALB target group for ECS.
@@ -111,6 +116,22 @@ resource "aws_lb" "ecs_alb" {
 # Create the ECS Cluster and Fargate launch type service in the private subnets
 resource "aws_ecs_cluster" "ecs_cluster" {
   name = "ecs-cluster"
+
+  tags = {
+    workload    = "workload1"
+    environment = "dev"
+  }
+}
+
+resource "aws_ecs_cluster_capacity_providers" "example" {
+  cluster_name = aws_ecs_cluster.ecs_cluster.name
+
+  capacity_providers = ["FARGATE"]
+
+  default_capacity_provider_strategy {
+    weight            = 100
+    capacity_provider = "FARGATE"
+  }
 }
 
 # Create the VPC Link configured with the private subnets. Security groups are kept empty here, but can be configured as required.
@@ -118,12 +139,22 @@ resource "aws_apigatewayv2_vpc_link" "vpclink_apigw_to_alb" {
   name               = "vpclink_apigw_to_alb"
   security_group_ids = []
   subnet_ids         = module.vpc.private_subnets
+
+  tags = {
+    workload    = "workload1"
+    environment = "dev"
+  }
 }
 
 # Create the API Gateway HTTP endpoint
 resource "aws_apigatewayv2_api" "apigw_http_endpoint" {
   name          = "serverlessland-pvt-endpoint"
   protocol_type = "HTTP"
+
+  tags = {
+    workload    = "workload1"
+    environment = "dev"
+  }
 }
 
 # # Create the API Gateway HTTP_PROXY integration between the created API and the private load balancer via the VPC Link.
