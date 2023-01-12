@@ -1,7 +1,3 @@
-provider "aws" {
-  region = var.aws_region
-}
-
 data "aws_availability_zones" "available" {
   state = "available"
 }
@@ -9,7 +5,7 @@ data "aws_availability_zones" "available" {
 module "vpc" {
   source = "terraform-aws-modules/vpc/aws"
 
-  name = "workload1"
+  name = "workload1-vpc"
   cidr = var.vpc_cidr
 
   azs             = [
@@ -113,24 +109,23 @@ resource "aws_lb" "ecs_alb" {
 #   }
 # }
 
-# Create the ECS Cluster and Fargate launch type service in the private subnets
-resource "aws_ecs_cluster" "ecs_cluster" {
-  name = "ecs-cluster"
+module "ecs" {
+  source  = "terraform-aws-modules/ecs/aws"
+  version = "4.1.2"
+
+  cluster_name = "ecs-fargate"
+
+  fargate_capacity_providers = {
+    FARGATE_SPOT = {
+      default_capacity_provider_strategy = {
+        weight = 100
+      }
+    }
+  }
 
   tags = {
-    workload    = "workload1"
     environment = "dev"
-  }
-}
-
-resource "aws_ecs_cluster_capacity_providers" "example" {
-  cluster_name = aws_ecs_cluster.ecs_cluster.name
-
-  capacity_providers = ["FARGATE"]
-
-  default_capacity_provider_strategy {
-    weight            = 100
-    capacity_provider = "FARGATE"
+    workload    = "workload1"
   }
 }
 

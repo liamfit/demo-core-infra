@@ -11,3 +11,7 @@ terraform {
     dynamodb_table = "terraform-state"
   }
 }
+
+provider "aws" {
+  region = var.aws_region
+}
