@@ -21,8 +21,11 @@ module "vpc" {
   ]
 
   tags = {
-    workload = "workload1"
+    workload    = "workload1"
     environment = "dev"
+  }
+  private_subnet_tags = {
+    type = "private"
   }
 }
 
