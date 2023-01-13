@@ -71,7 +71,7 @@ resource "aws_security_group_rule" "sg_ingress_rule_ecr_vpc_endpoint_from_ecs_cl
   from_port                = 443
   to_port                  = 443
   protocol                 = "tcp"
-  security_group_id        = aws_security_group.ecr_vpc_endpoint_security_group.id
+  security_group_id        = aws_security_group.vpc_endpoints_security_group.id
   source_security_group_id = aws_security_group.ecs_security_group.id
 }
 
