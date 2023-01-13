@@ -64,6 +64,10 @@ resource "aws_security_group" "ecs_security_group" {
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
+
+  tags = {
+    workload = "workload1"
+  }
 }
 
 # ECS cluster security group ingress from the load balancer.
@@ -75,10 +79,6 @@ resource "aws_security_group_rule" "sg_ingress_rule_ecs_cluster_from_lb" {
   protocol                 = "tcp"
   security_group_id        = aws_security_group.ecs_security_group.id
   source_security_group_id = aws_security_group.lb_security_group.id
-
-  tags = {
-    workload = "workload1"
-  }
 }
 
 # Create the internal application load balancer (ALB) in the private subnets.
