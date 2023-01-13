@@ -36,7 +36,7 @@ resource "aws_vpc_endpoint" "ecr-dkr-endpoint" {
   private_dns_enabled = true
   service_name        = "com.amazonaws.${var.aws_region}.ecr.dkr"
   vpc_endpoint_type   = "Interface"
-  security_group_ids  = [aws_security_group.ecr_vpc_endpoint_security_group.id]
+  security_group_ids  = [aws_security_group.vpc_endpoints_security_group.id]
   subnet_ids          = module.vpc.private_subnets
 }
 resource "aws_vpc_endpoint" "ecr-api-endpoint" {
@@ -44,13 +44,23 @@ resource "aws_vpc_endpoint" "ecr-api-endpoint" {
   private_dns_enabled = true
   service_name        = "com.amazonaws.${var.aws_region}.ecr.api"
   vpc_endpoint_type   = "Interface"
-  security_group_ids  = [aws_security_group.ecr_vpc_endpoint_security_group.id]
+  security_group_ids  = [aws_security_group.vpc_endpoints_security_group.id]
   subnet_ids          = module.vpc.private_subnets
 }
 
-# ECR VPC endpoint security group
-resource "aws_security_group" "ecr_vpc_endpoint_security_group" {
-  description = "ECR VPC endpoint Security Group"
+# Cloudwatch VPC endpoint
+resource "aws_vpc_endpoint" "cloudwatch-vpc-endpoint" {
+  vpc_id              = module.vpc.vpc_id
+  private_dns_enabled = true
+  service_name        = "com.amazonaws.${var.aws_region}.logs"
+  vpc_endpoint_type   = "Interface"
+  security_group_ids  = [aws_security_group.vpc_endpoints_security_group.id]
+  subnet_ids          = module.vpc.private_subnets
+}
+
+# VPC interface endpoints security group
+resource "aws_security_group" "vpc_endpoints_security_group" {
+  description = "VPC endpoints Security Group"
   vpc_id      = module.vpc.vpc_id
 }
 
