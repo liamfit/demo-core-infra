@@ -53,7 +53,7 @@ jobs:
 
       - name: Terraform plan
         id: plan
-        run: terraform plan -no-color -out "tf_plan" -input=false
+        run: terraform plan -var="aws_region=$AWS_REGION" -no-color -out "tf_plan" -input=false
         continue-on-error: true
 
       - name: Comment on PR
@@ -176,7 +176,7 @@ jobs:
 
       - name: Terraform apply
         id: apply
-        run: terraform apply  -var="aws_region=$AWS_REGION" -auto-approve -no-color -input=false tf_plan
+        run: terraform apply -auto-approve -no-color -input=false tf_plan
         continue-on-error: true
 
       - name: Comment on PR
