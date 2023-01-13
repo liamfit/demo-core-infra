@@ -30,14 +30,46 @@ module "vpc" {
   }
 }
 
-# VPC endpoint for ECR
+# ECR VPC endpoints
 resource "aws_vpc_endpoint" "ecr-dkr-endpoint" {
   vpc_id              = module.vpc.vpc_id
   private_dns_enabled = true
   service_name        = "com.amazonaws.${var.aws_region}.ecr.dkr"
   vpc_endpoint_type   = "Interface"
-  security_group_ids  = [aws_security_group.ecs_security_group.id]
+  security_group_ids  = [aws_security_group.ecr_vpc_endpoint_security_group.id]
   subnet_ids          = module.vpc.private_subnets
+}
+resource "aws_vpc_endpoint" "ecr-api-endpoint" {
+  vpc_id              = module.vpc.vpc_id
+  private_dns_enabled = true
+  service_name        = "com.amazonaws.${var.aws_region}.ecr.api"
+  vpc_endpoint_type   = "Interface"
+  security_group_ids  = [aws_security_group.ecr_vpc_endpoint_security_group.id]
+  subnet_ids          = module.vpc.private_subnets
+}
+
+# ECR VPC endpoint security group
+resource "aws_security_group" "ecr_vpc_endpoint_security_group" {
+  description = "ECR VPC endpoint Security Group"
+  vpc_id      = module.vpc.vpc_id
+}
+
+# ECR VPC endpoint security group ingress from ECS
+resource "aws_security_group_rule" "sg_ingress_rule_ecr_vpc_endpoint_from_ecs_cluster" {
+  type                     = "ingress"
+  description              = "Ingress from ECS cluster"
+  from_port                = 443
+  to_port                  = 443
+  protocol                 = "tcp"
+  security_group_id        = aws_security_group.ecr_vpc_endpoint_security_group.id
+  source_security_group_id = aws_security_group.ecs_security_group.id
+}
+
+# S3 Gateway endpoint
+resource "aws_vpc_endpoint" "s3" {
+  vpc_id          = module.vpc.vpc_id
+  service_name    = "com.amazonaws.${var.aws_region}.s3"
+  route_table_ids = module.vpc.private_route_table_ids
 }
 
 # Load balancer security group. CIDR and port ingress can be changed as required.
