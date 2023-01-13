@@ -130,8 +130,8 @@ resource "aws_security_group" "ecs_security_group" {
 resource "aws_security_group_rule" "sg_ingress_rule_ecs_cluster_from_lb" {
   type                     = "ingress"
   description              = "Ingress from Load Balancer"
-  from_port                = 80
-  to_port                  = 80
+  from_port                = 8080
+  to_port                  = 8080
   protocol                 = "tcp"
   security_group_id        = aws_security_group.ecs_security_group.id
   source_security_group_id = aws_security_group.lb_security_group.id
