@@ -176,7 +176,7 @@ jobs:
 
       - name: Terraform apply
         id: apply
-        run: terraform apply -auto-approve -no-color -input=false tf_plan
+        run: terraform apply -auto-approve -no-color -input=false tf_plan -var="aws_region=$AWS_REGION"
         continue-on-error: true
 
       - name: Comment on PR
