@@ -5,8 +5,9 @@ data "aws_availability_zones" "available" {
 module "vpc" {
   source = "terraform-aws-modules/vpc/aws"
 
-  name = "workload1-vpc"
-  cidr = var.vpc_cidr
+  name                 = "workload1-vpc"
+  cidr                 = var.vpc_cidr
+  enable_dns_hostnames = true
 
   azs             = [
     data.aws_availability_zones.available.names[0], 
@@ -21,8 +22,11 @@ module "vpc" {
   ]
 
   tags = {
-    workload = "workload1"
+    workload    = "workload1"
     environment = "dev"
+  }
+  private_subnet_tags = {
+    type = "private"
   }
 }
 
