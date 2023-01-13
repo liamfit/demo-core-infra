@@ -64,6 +64,10 @@ resource "aws_security_group" "ecs_security_group" {
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
+
+  tags = {
+    workload = "workload1"
+  }
 }
 
 # ECS cluster security group ingress from the load balancer.
