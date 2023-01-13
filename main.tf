@@ -102,8 +102,8 @@ resource "aws_security_group_rule" "sg_ingress_rule_all_to_lb" {
 resource "aws_security_group_rule" "sg_egress_rule_lb_to_ecs_cluster" {
   type                     = "egress"
   description              = "Target group egress"
-  from_port                = 80
-  to_port                  = 80
+  from_port                = 8080
+  to_port                  = 8080
   protocol                 = "tcp"
   security_group_id        = aws_security_group.lb_security_group.id
   source_security_group_id = aws_security_group.ecs_security_group.id
