@@ -1,6 +1,6 @@
 name: Terraform
 
-on: 
+on:
   pull_request:
   issue_comment:
     types:
@@ -9,6 +9,7 @@ on:
 jobs:
   plan:
     name: Terraform Plan
+    environment: dev
     if: ${{ github.event_name == 'pull_request' }}
     runs-on: ubuntu-latest
     permissions:
@@ -126,6 +127,7 @@ jobs:
 
   apply:
     name: Terraform Apply
+    environment: dev
     if: ${{ github.event.issue.pull_request && github.event.comment.body == 'terraform apply' && github.actor == 'liamfit' }}
     runs-on: ubuntu-latest    
     permissions:
