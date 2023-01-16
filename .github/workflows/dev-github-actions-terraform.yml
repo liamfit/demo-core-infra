@@ -1,32 +1,12 @@
 name: Terraform
 
 on:
-  push:
   pull_request:
   issue_comment:
     types:
     - created
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-    steps:
-      - name: Dump GitHub context
-        id: github_context_step
-        run: echo '${{ toJSON(github) }}'
-      - name: Dump job context
-        run: echo '${{ toJSON(job) }}'
-      - name: Dump steps context
-        run: echo '${{ toJSON(steps) }}'
-      - name: Dump runner context
-        run: echo '${{ toJSON(runner) }}'
-      - name: Dump strategy context
-        run: echo '${{ toJSON(strategy) }}'
-      - name: Dump matrix context
-        run: echo '${{ toJSON(matrix) }}'
-
   plan:
     name: Terraform Plan
     defaults:
@@ -68,7 +48,7 @@ jobs:
           terraform init
           -backend-config="region=${{ secrets.AWS_REGION }}"
           -backend-config="bucket=${{ secrets.TF_STATE_BUCKET }}"
-          -backend-config="key=${REPO_SHORT_NAME}${ENVIRONMENT:+/}${ENVIRONMENT:-}"
+          -backend-config="key=${REPO_SHORT_NAME}/dev/terraform.tfstate"
 
       - name: Terraform validate
         id: validate
@@ -196,7 +176,7 @@ jobs:
           terraform init
           -backend-config="region=${{ secrets.AWS_REGION }}"
           -backend-config="bucket=${{ secrets.TF_STATE_BUCKET }}"
-          -backend-config="key=${REPO_SHORT_NAME}${ENVIRONMENT:+/}${ENVIRONMENT:-}"
+          -backend-config="key=${REPO_SHORT_NAME}/dev/terraform.tfstate"
 
       - name: Terraform apply
         id: apply
