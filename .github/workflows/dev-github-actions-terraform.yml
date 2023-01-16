@@ -7,6 +7,9 @@ on:
     - created
 
 jobs:
+  defaults:
+    run:
+      working-directory: ./environments/dev
   plan:
     name: Terraform Plan
     environment: dev
