@@ -9,7 +9,6 @@ on:
 jobs:
   plan:
     name: Terraform Plan
-    environment: dev
     defaults:
       run:
         working-directory: environments/dev
@@ -49,7 +48,7 @@ jobs:
           terraform init
           -backend-config="region=${{ secrets.AWS_REGION }}"
           -backend-config="bucket=${{ secrets.TF_STATE_BUCKET }}"
-          -backend-config="key=${REPO_SHORT_NAME}${ENVIRONMENT:+/}${ENVIRONMENT:-}"
+          -backend-config="key=${REPO_SHORT_NAME}/dev/terraform.tfstate"
 
       - name: Terraform validate
         id: validate
@@ -177,7 +176,7 @@ jobs:
           terraform init
           -backend-config="region=${{ secrets.AWS_REGION }}"
           -backend-config="bucket=${{ secrets.TF_STATE_BUCKET }}"
-          -backend-config="key=${REPO_SHORT_NAME}${ENVIRONMENT:+/}${ENVIRONMENT:-}"
+          -backend-config="key=${REPO_SHORT_NAME}/dev/terraform.tfstate"
 
       - name: Terraform apply
         id: apply
