@@ -7,12 +7,12 @@ on:
     - created
 
 jobs:
-  defaults:
-    run:
-      working-directory: ./environments/dev
   plan:
     name: Terraform Plan
     environment: dev
+    defaults:
+      run:
+        working-directory: ./environments/dev
     if: ${{ github.event_name == 'pull_request' }}
     runs-on: ubuntu-latest
     permissions:
@@ -131,6 +131,9 @@ jobs:
   apply:
     name: Terraform Apply
     environment: dev
+    defaults:
+      run:
+        working-directory: ./environments/dev
     if: ${{ github.event.issue.pull_request && github.event.comment.body == 'terraform apply' && github.actor == 'liamfit' }}
     runs-on: ubuntu-latest    
     permissions:
