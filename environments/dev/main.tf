@@ -5,7 +5,7 @@ data "aws_availability_zones" "available" {
 module "vpc" {
   source = "terraform-aws-modules/vpc/aws"
 
-  name                 = "workload1-vpc"
+  name                 = "${var.project}-vpc"
   cidr                 = var.vpc_cidr
   enable_dns_hostnames = true
 

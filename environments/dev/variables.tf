@@ -3,9 +3,9 @@ variable "aws_region" {
   default = ""
 }
 
-variable "vpc_cidr" {
+variable "project" {
   type    = string
-  default =  "10.0.0.0/16"
+  default = "demo"
 }
 
 variable "tags" {
@@ -14,6 +14,11 @@ variable "tags" {
     "project"     = "demo",
     "environment" = "dev"
   }
+}
+
+variable "vpc_cidr" {
+  type    = string
+  default =  "10.0.0.0/16"
 }
 
 variable "alb_port" {
