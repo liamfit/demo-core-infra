@@ -20,11 +20,11 @@ jobs:
       id-token: write
       contents: read
     steps:
-      - name: Set repo short name
-        run: echo "REPO_SHORT_NAME=${GITHUB_REPOSITORY#*\/}" >> $GITHUB_ENV
-
       - name: Checkout code
         uses: actions/checkout@v3
+
+      - name: Set repo short name
+        run: echo "REPO_SHORT_NAME=${GITHUB_REPOSITORY#*\/}" >> $GITHUB_ENV
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
@@ -141,6 +141,9 @@ jobs:
       id-token: write
       contents: read
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
       - name: Set repo short name
         run: echo "REPO_SHORT_NAME=${GITHUB_REPOSITORY#*\/}" >> $GITHUB_ENV
 
