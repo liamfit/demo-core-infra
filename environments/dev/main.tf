@@ -58,6 +58,7 @@ resource "aws_vpc_endpoint" "cloudwatch_vpc_endpoint" {
 
 # VPC interface endpoints security group
 resource "aws_security_group" "vpc_endpoints_security_group" {
+  name        = "${var.project}-vpc-endpoint-sg"
   description = "VPC endpoints Security Group"
   vpc_id      = module.vpc.vpc_id
 }
@@ -82,6 +83,7 @@ resource "aws_vpc_endpoint" "s3" {
 
 # Load balancer security group. CIDR and port ingress can be changed as required.
 resource "aws_security_group" "lb_security_group" {
+  name        = "${var.project}-alb-sg"
   description = "LoadBalancer Security Group"
   vpc_id      = module.vpc.vpc_id
 }
@@ -109,6 +111,7 @@ resource "aws_security_group_rule" "sg_egress_rule_lb_to_ecs_cluster" {
 
 # ECS cluster security group.
 resource "aws_security_group" "ecs_security_group" {
+  name        = "${var.project}-ecs-sg"
   description = "ECS Security Group"
   vpc_id      = module.vpc.vpc_id
   egress {
@@ -135,6 +138,7 @@ resource "aws_security_group_rule" "sg_ingress_rule_ecs_cluster_from_lb" {
 
 # Create the internal application load balancer (ALB) in the private subnets.
 resource "aws_lb" "ecs_alb" {
+  name        = "${var.project}-alb"
   load_balancer_type = "application"
   internal           = true
   subnets            = module.vpc.private_subnets
