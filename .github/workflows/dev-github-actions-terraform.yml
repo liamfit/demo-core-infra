@@ -137,6 +137,7 @@ jobs:
 
   apply:
     name: Terraform Apply
+    needs: plan
     environment: dev
     runs-on: ubuntu-latest    
     permissions:
