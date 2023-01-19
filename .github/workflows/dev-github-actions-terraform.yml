@@ -98,7 +98,7 @@ jobs:
 
             #### Terraform Plan 📖\`${{ steps.plan.outcome }}\`
 
-            <details><summary>Show Plan</summary>
+            <details><summary>Show Result</summary>
 
             \`\`\`\n
             ${process.env.COMMENT}
@@ -133,7 +133,7 @@ jobs:
         run: zip -r config.zip . -x ".git*" "backend*"
 
       - name: Upload Terraform config and plan to S3
-        run: aws s3 cp config.zip s3://${{ secrets.GH_ARTIFACTS_BUCKET }}/${{github.event.number}}/
+        run: aws s3 cp config.zip s3://${{ secrets.GH_ARTIFACTS_BUCKET }}/${{ github.event.number }}/
 
   apply:
     name: Terraform Apply
@@ -160,7 +160,7 @@ jobs:
           aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Download Terraform config and plan from S3
-        run: aws s3 cp s3://${{ secrets.GH_ARTIFACTS_BUCKET }}/${{github.event.issue.number}}/config.zip .
+        run: aws s3 cp s3://${{ secrets.GH_ARTIFACTS_BUCKET }}/${{ github.event.number }}/config.zip .
 
       - name: Extract Terraform config and plan
         run: unzip config.zip
@@ -199,7 +199,7 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const output = `#### Terraform Apply Output 🎬\`${{ steps.apply.outcome }}\`
+            const output = `#### Terraform Apply 🎬\`${{ steps.apply.outcome }}\`
 
             <details><summary>Show Result</summary>
             
