@@ -149,7 +149,7 @@ resource "aws_lb" "ecs_alb" {
 
 # Create the ALB listener with default action
 resource "aws_lb_listener" "ecs_alb_listener" {
-  load_balancer_arn = aws_lb.ecs_alb.name
+  load_balancer_arn = aws_lb.ecs_alb.arn
   port              = var.alb_port
   protocol          = "HTTP"
   default_action {
