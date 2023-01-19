@@ -57,11 +57,17 @@ jobs:
 
       - name: Set COMMENT to stdout if successful
         if: steps.plan.outcome == 'success'
-        run: echo "COMMENT=${{ steps.plan.outputs.stdout }}" >> $GITHUB_ENV
+        run: |
+          echo "COMMENT<<EOF" >> $GITHUB_ENV
+          echo "${{ steps.plan.outputs.stdout }}" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
 
-      - name: Set COMMENT to stdout if successful
-        if: steps.plan.outcome == 'success'
-        run: echo "COMMENT=${{ steps.plan.outputs.stderr }}" >> $GITHUB_ENV
+      - name: Set COMMENT to stderr if failed
+        if: steps.plan.outcome == 'failure'
+        run: |
+          echo "COMMENT<<EOF" >> $GITHUB_ENV
+          echo "${{ steps.plan.outputs.stderr }}" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
 
       - name: Comment on PR
         uses: actions/github-script@v6
@@ -174,11 +180,17 @@ jobs:
 
       - name: Set COMMENT to stdout if successful
         if: steps.plan.outcome == 'success'
-        run: echo "COMMENT=${{ steps.apply.outputs.stdout }}" >> $GITHUB_ENV
+        run: |
+          echo "COMMENT<<EOF" >> $GITHUB_ENV
+          echo "${{ steps.apply.outputs.stdout }}" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
 
-      - name: Set COMMENT to stdout if successful
-        if: steps.plan.outcome == 'success'
-        run: echo "COMMENT=${{ steps.apply.outputs.stderr }}" >> $GITHUB_ENV
+      - name: Set COMMENT to stderr if failed
+        if: steps.plan.outcome == 'failure'
+        run: |
+          echo "COMMENT<<EOF" >> $GITHUB_ENV
+          echo "${{ steps.apply.outputs.stderr }}" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
 
       - name: Comment on PR
         uses: actions/github-script@v6
