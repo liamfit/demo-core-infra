@@ -179,14 +179,14 @@ jobs:
         continue-on-error: true
 
       - name: Set COMMENT to stdout if successful
-        if: steps.plan.outcome == 'success'
+        if: steps.apply.outcome == 'success'
         run: |
           echo "COMMENT<<EOF" >> $GITHUB_ENV
           echo "${{ steps.apply.outputs.stdout }}" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
 
       - name: Set COMMENT to stderr if failed
-        if: steps.plan.outcome == 'failure'
+        if: steps.apply.outcome == 'failure'
         run: |
           echo "COMMENT<<EOF" >> $GITHUB_ENV
           echo "${{ steps.apply.outputs.stderr }}" >> $GITHUB_ENV
