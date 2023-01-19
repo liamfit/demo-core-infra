@@ -55,10 +55,16 @@ jobs:
         run: terraform plan -var="aws_region=$AWS_REGION" -no-color -out "tf_plan" -input=false
         continue-on-error: true
 
+      - name: Set COMMENT to stdout if successful
+        if: steps.plan.outcome == 'success'
+        run: echo "COMMENT=${{ steps.plan.outputs.stdout }}" >> $GITHUB_ENV
+
+      - name: Set COMMENT to stdout if successful
+        if: steps.plan.outcome == 'success'
+        run: echo "COMMENT=${{ steps.plan.outputs.stderr }}" >> $GITHUB_ENV
+
       - name: Comment on PR
         uses: actions/github-script@v6
-        env:
-          PLAN: "terraform\n${{ steps.plan.outputs.stdout }}"
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
@@ -89,7 +95,7 @@ jobs:
             <details><summary>Show Plan</summary>
 
             \`\`\`\n
-            ${process.env.PLAN}
+            ${process.env.COMMENT}
             \`\`\`
 
             </details>
@@ -140,18 +146,6 @@ jobs:
         with:
           terraform_version: 1.3.6
 
-      - name: React to comment
-        uses: actions/github-script@v4
-        with:
-          script: |
-            const {owner, repo} = context.issue;
-            github.reactions.createForIssueComment({
-              owner,
-              repo,
-              comment_id: context.payload.comment.id,
-              content: "rocket",
-            });
-
       - name: Configure aws credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
@@ -178,6 +172,14 @@ jobs:
         run: terraform apply -auto-approve -no-color -input=false tf_plan
         continue-on-error: true
 
+      - name: Set COMMENT to stdout if successful
+        if: steps.plan.outcome == 'success'
+        run: echo "COMMENT=${{ steps.apply.outputs.stdout }}" >> $GITHUB_ENV
+
+      - name: Set COMMENT to stdout if successful
+        if: steps.plan.outcome == 'success'
+        run: echo "COMMENT=${{ steps.apply.outputs.stderr }}" >> $GITHUB_ENV
+
       - name: Comment on PR
         uses: actions/github-script@v6
         env:
@@ -185,12 +187,12 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const output = `#### Terraform Apply 🎬\`${{ steps.apply.outcome }}\`
+            const output = `#### Terraform Apply Output 🎬\`${{ steps.apply.outcome }}\`
 
             <details><summary>Show Result</summary>
             
             \`\`\`\n
-            ${process.env.APPLY}
+            ${process.env.COMMENT}
             \`\`\`
 
             </details>

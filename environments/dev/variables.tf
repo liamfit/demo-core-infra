@@ -9,7 +9,7 @@ variable "project" {
 }
 
 variable "tags" {
-  type    = map(any)
+  type = map(any)
   default = {
     "project"     = "demo",
     "environment" = "dev"
@@ -18,7 +18,7 @@ variable "tags" {
 
 variable "vpc_cidr" {
   type    = string
-  default =  "10.0.0.0/16"
+  default = "10.0.0.0/16"
 }
 
 variable "alb_port" {
