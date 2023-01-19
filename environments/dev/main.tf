@@ -193,7 +193,7 @@ resource "aws_apigatewayv2_vpc_link" "vpclink_apigw_to_alb" {
 
 # Create the API Gateway HTTP endpoint
 resource "aws_apigatewayv2_api" "apigw_http_endpoint" {
-  name          = "serverlessland-pvt-endpoint"
+  name          = "demo-apigw-endpoint"
   protocol_type = "HTTP"
 
   tags = var.tags
