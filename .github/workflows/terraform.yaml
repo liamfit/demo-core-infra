@@ -1,14 +1,27 @@
+
 name: Terraform
 
 on:
-  pull_request:
+  workflow_call:
+    inputs:
+      working-directory:
+        required: true
+        type: string
+      environment:
+        required: true
+        type: string
+      terraform-version:
+        required: true
+        type: number
+      terraform-state-key-prefix:
+        type: string
 
 jobs:
   plan:
     name: Terraform Plan
     defaults:
       run:
-        working-directory: environments/dev
+        working-directory: ${{ inputs.working-directory }}
     runs-on: ubuntu-latest
     permissions:
       pull-requests: write
@@ -18,13 +31,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Set repo short name
-        run: echo "REPO_SHORT_NAME=${GITHUB_REPOSITORY#*\/}" >> $GITHUB_ENV
-
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
         with:
-          terraform_version: 1.3.6
+          terraform_version: ${{ inputs.terraform-version }}
 
       - name: Terraform fmt
         id: fmt
@@ -35,7 +45,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v1
         with:
           role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/${{ secrets.AWS_ROLE }}
-          role-session-name: samplerolesession
+          role-session-name: ${{ github.repository }}-${{ github.event_name }}-${{ github.workflow }}-${{ github.run_id }}-${{ github.triggering_actor }}
           aws-region: ${{ secrets.AWS_REGION }}
       
       - name: Terraform init
@@ -44,7 +54,7 @@ jobs:
           terraform init
           -backend-config="region=${{ secrets.AWS_REGION }}"
           -backend-config="bucket=${{ secrets.TF_STATE_BUCKET }}"
-          -backend-config="key=${REPO_SHORT_NAME}/dev/terraform.tfstate"
+          -backend-config="key=${GITHUB_REPOSITORY#*\/}${{ inputs.terraform-state-key-prefix }}terraform.tfstate"
 
       - name: Terraform validate
         id: validate
@@ -52,7 +62,7 @@ jobs:
 
       - name: Terraform plan
         id: plan
-        run: terraform plan -var="aws_region=$AWS_REGION" -no-color -out "tf_plan" -input=false
+        run: terraform plan -var="aws_region=${{ secrets.AWS_REGION }}" -no-color -out "tf_plan" -input=false
         continue-on-error: true
 
       - name: Set COMMENT to stdout if successful
@@ -71,6 +81,7 @@ jobs:
 
       - name: Comment on PR
         uses: actions/github-script@v6
+        if: github.event_name == 'pull_request'
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
@@ -132,55 +143,41 @@ jobs:
       - name: Zip Terraform config files
         run: zip -r config.zip . -x ".git*" "backend*"
 
-      - name: Upload task-definition.json
+      - name: Upload terraform plan and config
         uses: actions/upload-artifact@v3
         with:
           name: terraform-config
-          path: environments/dev/config.zip
+          path: ${{ inputs.working-directory }}/config.zip
 
   apply:
     name: Terraform Apply
     needs: plan
-    environment: dev
+    environment: ${{ inputs.environment }}
     runs-on: ubuntu-latest    
     permissions:
       pull-requests: write
       id-token: write
       contents: read
     steps:
-      - name: Set repo short name
-        run: echo "REPO_SHORT_NAME=${GITHUB_REPOSITORY#*\/}" >> $GITHUB_ENV
-
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
         with:
-          terraform_version: 1.3.6
+          terraform_version: ${{ terraform-version }}
 
       - name: Configure aws credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
           role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/${{ secrets.AWS_ROLE }}
-          role-session-name: samplerolesession
+          role-session-name: ${{ github.repository }}-${{ github.event_name }}-${{ github.workflow }}-${{ github.run_id }}-${{ github.triggering_actor }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      # - name: Download Terraform config and plan from S3
-      #   run: aws s3 cp s3://${{ secrets.GH_ARTIFACTS_BUCKET }}/${{ github.event.number }}/config.zip .
-
-      - name: Download appspec.yaml
+      - name: Download terraform plan and config
         uses: actions/download-artifact@v3
         with:
           name: terraform-config
 
       - name: Extract Terraform config and plan
         run: unzip config.zip
-
-      # - name: Terraform init
-      #   id: init
-      #   run: >
-      #     terraform init
-      #     -backend-config="region=${{ secrets.AWS_REGION }}"
-      #     -backend-config="bucket=${{ secrets.TF_STATE_BUCKET }}"
-      #     -backend-config="key=${REPO_SHORT_NAME}/dev/terraform.tfstate"
 
       - name: Terraform apply
         id: apply
@@ -203,6 +200,7 @@ jobs:
 
       - name: Comment on PR
         uses: actions/github-script@v6
+        if: github.event_name == 'pull_request'
         env:
           APPLY: "terraform\n${{ steps.apply.outputs.stdout }}"
         with:
@@ -228,4 +226,3 @@ jobs:
       - name: Check Terraform apply status
         if: steps.apply.outcome == 'failure'
         run: exit 1
-
