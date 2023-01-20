@@ -15,4 +15,5 @@ jobs:
     with:
       environment: dev
       terraform-version: 1.3.6
+      working-directory: environments/dev
     secrets: inherit
