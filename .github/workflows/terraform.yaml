@@ -5,7 +5,7 @@ on:
   workflow_call:
     inputs:
       working-directory:
-        description: "Directory to run Terraform commands from, if not the root directory of the repository."
+        description: "Directory to run Terraform commands from, if not the root directory of the repository. Also used for state file S3 prefix."
         type: string
         default: "."
       environment:
@@ -16,20 +16,16 @@ on:
         description: "Version of Terraform to use."
         required: true
         type: string
-      terraform-state-key-prefix:
-        description: "String which is appended to the repository name to form the S3 key prefix for the terraform.tfstate file. Should end with a '/'."
-        type: string
-        default: ""
       ignore-directories:
         description: "Subdirectories of 'working-directory' to ignore when zipping Terraform config and plan files."
         type: string
         default: ".git"
       comment-on-plan:
-        description: "Whether to add a comment to pull request with details of the planned changes. Disable when not calling from pull request"
+        description: "Whether to add a comment to the pull request with details of the planned changes."
         type: boolean
         default: true
       comment-on-apply:
-        description: "Whether to add a comment with details of the applied changes. Disable when not calling from pull request"
+        description: "Whether to add a comment to the pull request with details of the applied changes."
         type: boolean
         default: true
 
@@ -61,13 +57,21 @@ jobs:
           role-session-name: ${{ github.run_id }}
           aws-region: ${{ secrets.AWS_REGION }}
       
+      - name: Set state file S3 prefix
+        if: inputs.working-directory == '.'
+        run: echo "S3_KEY=${GITHUB_REPOSITORY#*\/}$/terraform.tfstate"
+
+      - name: Set state file S3 prefix
+        if: inputs.working-directory != '.'
+        run: echo "S3_KEY=${GITHUB_REPOSITORY#*\/}/${{ inputs.working-directory }}${{ !endsWith(inputs.working-directory, '/') && '/' || '' }}terraform.tfstate"
+
       - name: Terraform init
         id: init
         run: >
           terraform init
           -backend-config="region=${{ secrets.AWS_REGION }}"
           -backend-config="bucket=${{ secrets.TF_STATE_BUCKET }}"
-          -backend-config="key=${GITHUB_REPOSITORY#*\/}/${{ inputs.terraform-state-key-prefix }}terraform.tfstate"
+          -backend-config="key=${GITHUB_REPOSITORY#*\/}${{ inputs.working-directory == '.' && '/' || inputs.working-directory }}terraform.tfstate"
 
       - name: Terraform validate
         id: validate
@@ -79,14 +83,14 @@ jobs:
         continue-on-error: true
 
       - name: Set COMMENT to stdout if successful
-        if: steps.plan.outcome == 'success' && inputs.comment-on-plan
+        if: github.event_name == 'pull_request' && steps.plan.outcome == 'success' && inputs.comment-on-plan
         run: |
           echo "COMMENT<<EOF" >> $GITHUB_ENV
           echo "${{ steps.plan.outputs.stdout }}" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
 
       - name: Set COMMENT to stderr if failed
-        if: steps.plan.outcome == 'failure' && inputs.comment-on-plan
+        if: github.event_name == 'pull_request' && steps.plan.outcome == 'failure' && inputs.comment-on-plan
         run: |
           echo "COMMENT<<EOF" >> $GITHUB_ENV
           echo "${{ steps.plan.outputs.stderr }}" >> $GITHUB_ENV
@@ -94,7 +98,7 @@ jobs:
 
       - name: Comment on PR
         uses: actions/github-script@v6
-        if: inputs.comment-on-plan
+        if: github.event_name == 'pull_request' && inputs.comment-on-plan
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
@@ -194,14 +198,14 @@ jobs:
         continue-on-error: true
 
       - name: Set COMMENT to stdout if successful
-        if: steps.apply.outcome == 'success' && inputs.comment-on-apply
+        if: github.event_name == 'pull_request' && steps.apply.outcome == 'success' && inputs.comment-on-apply
         run: |
           echo "COMMENT<<EOF" >> $GITHUB_ENV
           echo "${{ steps.apply.outputs.stdout }}" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
 
       - name: Set COMMENT to stderr if failed
-        if: steps.apply.outcome == 'failure' && inputs.comment-on-apply
+        if: github.event_name == 'pull_request' && steps.apply.outcome == 'failure' && inputs.comment-on-apply
         run: |
           echo "COMMENT<<EOF" >> $GITHUB_ENV
           echo "${{ steps.apply.outputs.stderr }}" >> $GITHUB_ENV
@@ -209,7 +213,7 @@ jobs:
 
       - name: Comment on PR
         uses: actions/github-script@v6
-        if: inputs.comment-on-apply
+        if: github.event_name == 'pull_request' && inputs.comment-on-apply
         env:
           APPLY: "terraform\n${{ steps.apply.outputs.stdout }}"
         with:
