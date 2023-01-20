@@ -6,15 +6,13 @@ on:
       - environments/dev/**
 
 jobs:
-  call-terraform:
+  call-terraform-workflow:
     permissions:
       pull-requests: write
       id-token: write
       contents: read
     uses: ./.github/workflows/terraform.yaml
     with:
-      working-directory: environments/dev
       environment: dev
       terraform-version: 1.3.6
-      terraform-state-key-prefix: dev/
     secrets: inherit

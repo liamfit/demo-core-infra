@@ -5,16 +5,33 @@ on:
   workflow_call:
     inputs:
       working-directory:
-        required: true
+        description: "Directory to run Terraform commands from, if not the root directory of the repository."
         type: string
+        default: ""
       environment:
+        description: "Deployment environment. Must match a named environment in the calling workflow."
         required: true
         type: string
       terraform-version:
+        description: "Version of Terraform to use."
         required: true
         type: string
       terraform-state-key-prefix:
+        description: "String which is appended to the repository name to form the S3 key prefix for the terraform.tfstate file. Should end with a '/'."
         type: string
+        default: ""
+      ignore-directories:
+        description: "Subdirectories of 'working-directory' to ignore when zipping Terraform config and plan files."
+        type: string
+        default: ".git"
+      comment-on-plan:
+        description: "Whether to add a comment to pull request with details of the planned changes. Disable when not calling from pull request"
+        type: boolean
+        default: true
+      comment-on-apply:
+        description: "Whether to add a comment with details of the applied changes. Disable when not calling from pull request"
+        type: boolean
+        default: true
 
 jobs:
   plan:
@@ -62,14 +79,14 @@ jobs:
         continue-on-error: true
 
       - name: Set COMMENT to stdout if successful
-        if: steps.plan.outcome == 'success'
+        if: steps.plan.outcome == 'success' && comment-on-plan
         run: |
           echo "COMMENT<<EOF" >> $GITHUB_ENV
           echo "${{ steps.plan.outputs.stdout }}" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
 
       - name: Set COMMENT to stderr if failed
-        if: steps.plan.outcome == 'failure'
+        if: steps.plan.outcome == 'failure' && comment-on-plan
         run: |
           echo "COMMENT<<EOF" >> $GITHUB_ENV
           echo "${{ steps.plan.outputs.stderr }}" >> $GITHUB_ENV
@@ -77,7 +94,7 @@ jobs:
 
       - name: Comment on PR
         uses: actions/github-script@v6
-        if: github.event_name == 'pull_request'
+        if: comment-on-plan
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
@@ -136,10 +153,10 @@ jobs:
         if: steps.plan.outcome == 'failure'
         run: exit 1
 
-      - name: Zip Terraform config files
+      - name: Zip Terraform plan and config files
         run: zip -r config.zip . -x ".git*" "backend*"
 
-      - name: Upload terraform plan and config
+      - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
           name: terraform-config
@@ -163,12 +180,12 @@ jobs:
           role-session-name: ${{ github.run_id }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Download terraform plan and config
+      - name: Download artifact
         uses: actions/download-artifact@v3
         with:
           name: terraform-config
 
-      - name: Extract Terraform config and plan
+      - name: Extract Terraform plan and config files
         run: unzip config.zip
 
       - name: Terraform apply
@@ -177,14 +194,14 @@ jobs:
         continue-on-error: true
 
       - name: Set COMMENT to stdout if successful
-        if: steps.apply.outcome == 'success'
+        if: steps.apply.outcome == 'success' && comment-on-apply
         run: |
           echo "COMMENT<<EOF" >> $GITHUB_ENV
           echo "${{ steps.apply.outputs.stdout }}" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
 
       - name: Set COMMENT to stderr if failed
-        if: steps.apply.outcome == 'failure'
+        if: steps.apply.outcome == 'failure' && comment-on-apply
         run: |
           echo "COMMENT<<EOF" >> $GITHUB_ENV
           echo "${{ steps.apply.outputs.stderr }}" >> $GITHUB_ENV
@@ -192,7 +209,7 @@ jobs:
 
       - name: Comment on PR
         uses: actions/github-script@v6
-        if: github.event_name == 'pull_request'
+        if: comment-on-apply
         env:
           APPLY: "terraform\n${{ steps.apply.outputs.stdout }}"
         with:
