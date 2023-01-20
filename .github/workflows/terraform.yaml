@@ -12,7 +12,7 @@ on:
         type: string
       terraform-version:
         required: true
-        type: number
+        type: string
       terraform-state-key-prefix:
         type: string
 
