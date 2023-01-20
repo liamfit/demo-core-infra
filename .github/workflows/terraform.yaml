@@ -7,7 +7,7 @@ on:
       working-directory:
         description: "Directory to run Terraform commands from, if not the root directory of the repository."
         type: string
-        default: ""
+        default: "."
       environment:
         description: "Deployment environment. Must match a named environment in the calling workflow."
         required: true
