@@ -136,7 +136,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: terraform-config
-          path: config.zip
+          path: environments/dev/config.zip
 
   apply:
     name: Terraform Apply
