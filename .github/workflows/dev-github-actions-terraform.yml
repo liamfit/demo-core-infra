@@ -132,8 +132,11 @@ jobs:
       - name: Zip Terraform config files
         run: zip -r config.zip . -x ".git*" "backend*"
 
-      - name: Upload Terraform config and plan to S3
-        run: aws s3 cp config.zip s3://${{ secrets.GH_ARTIFACTS_BUCKET }}/${{ github.event.number }}/
+      - name: Upload task-definition.json
+        uses: actions/upload-artifact@v3
+        with:
+          name: terraform-config
+          path: config.zip
 
   apply:
     name: Terraform Apply
@@ -160,8 +163,13 @@ jobs:
           role-session-name: samplerolesession
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Download Terraform config and plan from S3
-        run: aws s3 cp s3://${{ secrets.GH_ARTIFACTS_BUCKET }}/${{ github.event.number }}/config.zip .
+      # - name: Download Terraform config and plan from S3
+      #   run: aws s3 cp s3://${{ secrets.GH_ARTIFACTS_BUCKET }}/${{ github.event.number }}/config.zip .
+
+      - name: Download appspec.yaml
+        uses: actions/download-artifact@v3
+        with:
+          name: terraform-config
 
       - name: Extract Terraform config and plan
         run: unzip config.zip
