@@ -3,7 +3,7 @@ name: Pull-Request-Dev
 on:
   pull_request:
     paths:
-      - 'environments/dev/**'
+      - environments/dev/**
 
 jobs:
   call-terraform:
@@ -13,8 +13,8 @@ jobs:
       contents: read
     uses: ./.github/workflows/terraform.yaml
     with:
-      working-directory: "environments/dev"
-      environment: "dev"
-      terraform-version: "1.3.6"
-      terraform-state-key-prefix: "environments/dev/"
+      working-directory: environments/dev
+      environment: dev
+      terraform-version: 1.3.6
+      terraform-state-key-prefix: environments/dev/
     secrets: inherit
