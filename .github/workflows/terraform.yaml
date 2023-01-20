@@ -41,7 +41,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v1
         with:
           role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/${{ secrets.AWS_ROLE }}
-          role-session-name: ${{ github.repository }}-${{ github.event_name }}-${{ github.workflow }}-${{ github.run_id }}-${{ github.triggering_actor }}
+          role-session-name: ${GITHUB_REPOSITORY#*\/}-${{ github.event_name }}-${{ github.workflow }}-${{ github.run_id }}-${{ github.triggering_actor }}
           aws-region: ${{ secrets.AWS_REGION }}
       
       - name: Terraform init
@@ -160,7 +160,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v1
         with:
           role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/${{ secrets.AWS_ROLE }}
-          role-session-name: ${{ github.repository }}-${{ github.event_name }}-${{ github.workflow }}-${{ github.run_id }}-${{ github.triggering_actor }}
+          role-session-name: ${GITHUB_REPOSITORY#*\/}-${{ github.event_name }}-${{ github.workflow }}-${{ github.run_id }}-${{ github.triggering_actor }}
           aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Download terraform plan and config
