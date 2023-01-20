@@ -16,5 +16,5 @@ jobs:
       working-directory: environments/dev
       environment: dev
       terraform-version: 1.3.6
-      terraform-state-key-prefix: environments/dev/
+      terraform-state-key-prefix: dev/
     secrets: inherit
