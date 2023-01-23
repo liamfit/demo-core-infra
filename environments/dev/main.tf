@@ -112,7 +112,7 @@ resource "aws_security_group_rule" "sg_egress_rule_lb_to_ecs_cluster" {
 # ECS cluster security group.
 resource "aws_security_group" "ecs_security_group" {
   name        = "${var.project}-ecs-sg"
-  description = "ECS Security Group"
+  description = "ECS Service Security Group"
   vpc_id      = module.vpc.vpc_id
   egress {
     description = "Allow all outbound traffic by default"
