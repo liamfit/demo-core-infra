@@ -84,7 +84,7 @@ resource "aws_vpc_endpoint" "s3" {
 # Load balancer security group. CIDR and port ingress can be changed as required.
 resource "aws_security_group" "lb_security_group" {
   name        = "${var.project}-alb-sg"
-  description = "LoadBalancer Security Group"
+  description = "Application Load Balancer Security Group"
   vpc_id      = module.vpc.vpc_id
 }
 resource "aws_security_group_rule" "sg_ingress_rule_all_to_lb" {
@@ -112,7 +112,7 @@ resource "aws_security_group_rule" "sg_egress_rule_lb_to_ecs_cluster" {
 # ECS cluster security group.
 resource "aws_security_group" "ecs_security_group" {
   name        = "${var.project}-ecs-sg"
-  description = "ECS Security Group"
+  description = "ECS Services Security Group"
   vpc_id      = module.vpc.vpc_id
   egress {
     description = "Allow all outbound traffic by default"
@@ -128,7 +128,7 @@ resource "aws_security_group" "ecs_security_group" {
 # ECS cluster security group ingress from the load balancer.
 resource "aws_security_group_rule" "sg_ingress_rule_ecs_cluster_from_lb" {
   type                     = "ingress"
-  description              = "Ingress from Application Load Balancer"
+  description              = "Ingress from Load Balancer"
   from_port                = var.container_port
   to_port                  = var.container_port
   protocol                 = "tcp"
