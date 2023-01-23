@@ -128,7 +128,7 @@ resource "aws_security_group" "ecs_security_group" {
 # ECS cluster security group ingress from the load balancer.
 resource "aws_security_group_rule" "sg_ingress_rule_ecs_cluster_from_lb" {
   type                     = "ingress"
-  description              = "Ingress from Load Balancer"
+  description              = "Ingress from Application Load Balancer"
   from_port                = var.container_port
   to_port                  = var.container_port
   protocol                 = "tcp"
